@@ -1,0 +1,19 @@
+{
+  "name": "Noice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Danny Creations",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "got": "^11.8.0",
+    "inquirer": "^7.3.3",
+    "lodash": "^4.17.20",
+    "moment": "^2.29.1",
+    "pretty-bytes": "^5.4.1"
+  }
+}
