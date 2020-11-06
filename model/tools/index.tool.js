@@ -1,3 +1,3 @@
 module.exports = {
-  DRATool: require('./dra.tool')
+  RADTool: require('./rad.tool')
 }

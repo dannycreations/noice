@@ -1,39 +1,22 @@
-const fs = require('fs')
 const got = require('got')
 const _ = require('lodash')
-const chalk = require('chalk')
-const Client = require('./../client')
 
-module.exports = class NoiceModul extends Client {
+class NoiceModul {
   constructor() {
-    super()
     this.logged = false
   }
   
   async send(userOptions) {
-    try {
-      const options = _.defaultsDeep(userOptions, {
-        prefixUrl: 'https://api.noice.id/',
-        method: 'GET',
-        headers: this.getDefaultHeaders(),
-        responseType: 'json',
-        timeout: 60000,
-        retry: { limit: 0 }
-      })
-      const response = await got(options)
-      if (response.body.meta.status) return response.body.data
-    } catch(err) {
-      if (err.response.statusCode === 401) {
-        fs.rmdirSync(`${process.cwd()}/sessions`, { recursive: true })
-        this.output(chalk`{bold.red Session expired, please login again!}`)
-        process.exit()
-      } else if (err.response.statusCode === 404) {
-        fs.rmdirSync(`${process.cwd()}/sessions`, { recursive: true })
-        this.output(chalk`{bold.red Mobile number not registered!}`)
-        process.exit()
-      }
-      console.trace(err.response)
-    }
+    const options = _.defaultsDeep(userOptions, {
+      prefixUrl: 'https://api.noice.id/',
+      method: 'GET',
+      headers: this.getDefaultHeaders(),
+      responseType: 'json',
+      timeout: 60000,
+      retry: { limit: 0 }
+    })
+    const res = await got(options)
+    if (res.body.meta.status) return res.body.data
   }
   
   getDefaultHeaders() {
@@ -54,7 +37,7 @@ module.exports = class NoiceModul extends Client {
   }
   
   async oauthToken() {
-    const res = await this.send({
+    this.deserialize(await this.send({
       url: 'oauth/token',
       method: 'POST',
       json: {
@@ -62,8 +45,7 @@ module.exports = class NoiceModul extends Client {
         username: 'noice',
         password: '%%noice%%'
       }
-    })
-    this.deserialize(res)
+    }))
   }
   
   async locationCountry(dialCode) {
@@ -86,17 +68,12 @@ module.exports = class NoiceModul extends Client {
     return res.detail
   }
   
-  async authLogin(dialCode, mobileNumber) {
-    const path = `${process.cwd()}/sessions/${mobileNumber}.json`
-    if (fs.existsSync(path)) return this.deserialize(fs.readFileSync(path).toString())
-    await this.oauthToken()
-    dialCode = await this.locationCountry(dialCode)
-    const otp = await this.otpRequest(dialCode.id, mobileNumber)
+  async authLogin(dialCode, mobileNumber, otp) {
     const res = await this.send({
       url: 'auth/login',
       method: 'POST',
       json: {
-        country_id: dialCode.id,
+        country_id: dialCode,
         mobile_number: mobileNumber,
         otp: otp,
         registration_id: '',
@@ -105,6 +82,7 @@ module.exports = class NoiceModul extends Client {
       }
     })
     this.deserialize(res.detail)
-    fs.writeFileSync(path, JSON.stringify(this.logged, null, 2))
   }
 }
+
+module.exports = new NoiceModul()

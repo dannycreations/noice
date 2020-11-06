@@ -11,13 +11,13 @@ class Index {
       name: 'tools',
       message: 'Select tools:',
       choices: [
-        'Downloads Raw Audio'
+        'Raw Audio Downloader'
       ] 
     }]
     const choise = await prompt(question)
     switch (choise.tools) {
-      case 'Downloads Raw Audio':
-        return Tools.DRATool.run()
+      case 'Raw Audio Downloader':
+        return Tools.RADTool.run()
         break
     }
   }
